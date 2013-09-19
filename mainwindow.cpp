@@ -13,6 +13,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setWindowTitle("DDO Quest Helper " + VERSION);
 
+    createActions();
+    createMenus();
+
     db = QSqlDatabase::addDatabase("QSQLITE");
     db.setHostName("localhost");
     db.setDatabaseName("ddoQuestDatabase.db");
@@ -242,7 +245,7 @@ void MainWindow::on_checkBoxDifficultyCompleted_toggled(bool checked)
     updateColumnVisibility("difficultyCompleted",checked);
 }
 
-void MainWindow::on_actionSave_triggered()
+void MainWindow::save()
 {
 
     if(filename != "")
@@ -279,23 +282,23 @@ void MainWindow::on_actionSave_triggered()
     }
     else
     {
-        on_actionSave_As_triggered();
+        saveAs();
     }
 
 }
 
-void MainWindow::on_actionSave_As_triggered()
+void MainWindow::saveAs()
 {
     QString readFilename = QFileDialog::getSaveFileName(this,"Save as");
 
     if(!readFilename.isEmpty())
     {
         filename = readFilename;
-        on_actionSave_triggered();
+        save();
     }
 }
 
-void MainWindow::on_actionOpen_triggered()
+void MainWindow::open()
 {
     QString readFilename = QFileDialog::getOpenFileName(this,"Open a file");
 
@@ -343,7 +346,7 @@ void MainWindow::on_actionOpen_triggered()
     settings->setValue("Recent/recentFile1",filename);
 }
 
-void MainWindow::on_actionNew_triggered()
+void MainWindow::newFile()
 {
     filename = "";
     setWindowTitle("DDO Quest Helper " + VERSION);
@@ -390,4 +393,50 @@ void MainWindow::on_checkBoxHideRaidsFilter_toggled(bool checked)
 void MainWindow::on_checkBoxHideCompletedQuestsFilter_toggled(bool checked)
 {
     settings->setValue("Misc/hideCompleted",checked);
+}
+
+void MainWindow::createActions()
+{
+    newAct = new QAction(tr("&New"), this);
+    newAct->setShortcuts(QKeySequence::New);
+    connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
+
+    openAct = new QAction(tr("&Open..."), this);
+    openAct->setShortcuts(QKeySequence::Open);
+    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+
+    saveAct = new QAction(tr("&Save"), this);
+    saveAct->setShortcuts(QKeySequence::Save);
+    connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
+
+    saveAsAct = new QAction(tr("Save &As..."), this);
+    saveAsAct->setShortcuts(QKeySequence::SaveAs);
+    connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
+
+    /*for (int i = 0; i < MaxRecentFiles; ++i) {
+        recentFileActs[i] = new QAction(this);
+        recentFileActs[i]->setVisible(false);
+        connect(recentFileActs[i], SIGNAL(triggered()),this, SLOT(openRecentFile()));
+    }*/
+
+    exitAct = new QAction(tr("E&xit"), this);
+    exitAct->setShortcuts(QKeySequence::Quit);
+    connect(exitAct, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
+}
+
+void MainWindow::createMenus()
+{
+    fileMenu = ui->menuBar->addMenu(tr("&File"));
+    fileMenu->addAction(newAct);
+    fileMenu->addAction(openAct);
+    fileMenu->addAction(saveAct);
+    fileMenu->addAction(saveAsAct);
+    //separatorAct = fileMenu->addSeparator();
+    /*for (int i = 0; i < MaxRecentFiles; ++i)
+        fileMenu->addAction(recentFileActs[i]);*/
+    fileMenu->addSeparator();
+    fileMenu->addAction(exitAct);
+    //updateRecentFileActions();
+
+    //menuBar()->addSeparator();
 }

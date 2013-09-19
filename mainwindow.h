@@ -34,10 +34,10 @@ private slots:
     void on_checkBoxAdventurePack_toggled(bool checked);
     void on_checkBoxDifficultyCompleted_toggled(bool checked);
 
-    void on_actionSave_triggered();
-    void on_actionSave_As_triggered();
-    void on_actionOpen_triggered();
-    void on_actionNew_triggered();
+    void save();
+    void saveAs();
+    void open();
+    void newFile();
 
     void updateFilters();
 
@@ -53,11 +53,20 @@ private:
     QSqlTableModel *tableModel;
     comboBoxDelegate *delegate;
     QSettings* settings;
+
+    QMenu *fileMenu;
+    QAction *newAct;
+    QAction *openAct;
+    QAction *saveAct;
+    QAction *saveAsAct;
+    QAction *exitAct;
+
     QString filename = "";
     const QString VERSION = "0.1.0";
 
 
-
+    void createActions();
+    void createMenus();
     int columnIndex(QString name);
 };
 
