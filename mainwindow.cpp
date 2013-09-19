@@ -42,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //center the tabs in the tab widget
     ui->tabWidget->setStyleSheet("QTabWidget::tab-bar{alignment:center;}");
 
+    //This is a pretty bad location for an ini. Maybe look into using QStandardPaths class from qt5 (once migrated to qt5)
     settings = new QSettings("ddoQuestHelper.ini", QSettings::IniFormat);
 
     //Read the bools from the config, hide columns that need to be hidden
@@ -274,7 +275,6 @@ void MainWindow::on_actionSave_triggered()
 
         //TODO write a nice wrapper to save 5 or so previous files
         settings->setValue("Recent/recentFile1",filename);
-        setWindowTitle("DDO Quest Helper " + VERSION);
 
     }
     else
