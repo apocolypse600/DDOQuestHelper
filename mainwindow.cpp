@@ -243,13 +243,19 @@ void MainWindow::on_checkBoxDifficultyCompleted_toggled(bool checked)
 
 void MainWindow::on_actionSave_triggered()
 {
+
     if(filename != "")
     {
+        qDebug() << "Saving to file " << filename << endl;
 
         QFile sFile(filename);
         if(sFile.open(QFile::WriteOnly | QFile::Text))
         {
             QTextStream out(&sFile);
+
+            //Need to save our table with no filter applied, so we capture all the data
+            QString oldFilter = tableModel->filter();
+            tableModel->setFilter("");
 
             for ( int i = 0; i < tableModel->rowCount(); ++i )
             {
@@ -259,6 +265,7 @@ void MainWindow::on_actionSave_triggered()
                     <<  tableModel->index(i,12,QModelIndex()).data().toString() << '\n';
             }
 
+            tableModel->setFilter(oldFilter);
 
             sFile.flush();
             sFile.close();
@@ -303,6 +310,7 @@ void MainWindow::on_actionOpen_triggered()
 
             //Start the transaction with the database. If we do all the edits in one transaction it goes much, much faster
             db.transaction();
+
 
             for ( int i = 0; i < tableModel->rowCount(); ++i )
             {
