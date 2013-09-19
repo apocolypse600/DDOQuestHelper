@@ -10,6 +10,7 @@ QWidget *comboBoxDelegate::createEditor(QWidget *parent, const QStyleOptionViewI
    QComboBox *editor = new QComboBox(parent);
    editor->addItem("Not Completed");
    editor->addItem("Casual");
+   editor->addItem("Solo");
    editor->addItem("Normal");
    editor->addItem("Hard");
    editor->addItem("Elite");
