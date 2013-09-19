@@ -74,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->checkBoxHideCompletedQuestsFilter, SIGNAL(clicked(bool)),this,SLOT(updateFilters()));
     connect(ui->checkBoxHideRaidsFilter, SIGNAL(clicked(bool)),this,SLOT(updateFilters()));
     connect(ui->checkBoxHideExtremeChallengeFilter, SIGNAL(clicked(bool)),this,SLOT(updateFilters()));
+    connect(ui->lineEditNameFilter, SIGNAL(textChanged(QString)),this,SLOT(updateFilters()));
 
     /*for ( int i = 0; i < tableModel->rowCount(); ++i )
     {
@@ -346,7 +347,7 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::updateFilters()
 {
-    QString filter = "Level<='" + QString::number(ui->spinBoxMaxLevel->value()) + "'" + "AND Level>='" + QString::number(ui->spinBoxMinLevel->value()) + "'";
+    QString filter = "Name LIKE '%" + ui->lineEditNameFilter->text() + "%' AND Level<='" + QString::number(ui->spinBoxMaxLevel->value()) + "'" + "AND Level>='" + QString::number(ui->spinBoxMinLevel->value()) + "'";
 
     if (ui->checkBoxHideCompletedQuestsFilter->isChecked())
     {

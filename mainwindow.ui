@@ -31,6 +31,16 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Quest Name</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEditNameFilter"/>
+          </item>
+          <item>
            <widget class="QLabel" name="label_3">
             <property name="text">
              <string>Min Level</string>
@@ -240,7 +250,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
           <x>9</x>
