@@ -266,6 +266,8 @@ void MainWindow::on_actionSave_triggered()
 
         //TODO write a nice wrapper to save 5 or so previous files
         settings->setValue("Recent/recentFile1",filename);
+        setWindowTitle("DDO Quest Helper " + VERSION);
+
     }
     else
     {
@@ -348,7 +350,7 @@ void MainWindow::updateFilters()
 
     if (ui->checkBoxHideCompletedQuestsFilter->isChecked())
     {
-        filter += " AND DifficultyCompleted<>'Epic' AND DifficultyCompleted<>'Solo'";
+        filter += " AND DifficultyCompleted<>'Elite' AND DifficultyCompleted<>'Solo'";
     }
 
     if ( ui->checkBoxHideExtremeChallengeFilter->isChecked())

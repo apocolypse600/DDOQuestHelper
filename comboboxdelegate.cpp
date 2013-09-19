@@ -12,7 +12,7 @@ QWidget *comboBoxDelegate::createEditor(QWidget *parent, const QStyleOptionViewI
    editor->addItem("Casual");
    editor->addItem("Normal");
    editor->addItem("Hard");
-   editor->addItem("Epic");
+   editor->addItem("Elite");
    return editor;
 }
 
