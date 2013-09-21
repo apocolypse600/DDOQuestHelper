@@ -379,10 +379,14 @@ void MainWindow::loadFile(QString filepath)
                 QString questName = in.readLine();
                 QString difficultyCompleted = in.readLine();
 
-                QString query = "UPDATE questList SET DifficultyCompleted='" + difficultyCompleted + "' WHERE Name='" + questName + "'";
+                //QString query = "UPDATE questList SET DifficultyCompleted='" + difficultyCompleted + "' WHERE Name='" + questName + "'";
+                QSqlQuery query(db);
+                query.prepare("UPDATE questList SET DifficultyCompleted='" + difficultyCompleted + "' WHERE Name=:questName");
+                query.bindValue(":questName",questName);
 
-                qDebug() << query;
-                db.exec(query);
+                //qDebug() << query.;
+                query.exec();
+                //db.exec(query);
             }
 
             db.commit();
