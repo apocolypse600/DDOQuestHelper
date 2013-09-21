@@ -348,9 +348,9 @@ void MainWindow::open()
     //update the view
     tableModel->select();
 
-    setWindowTitle("DDO Quest Helper " + VERSION + " - " + filename);
-
     filename = readFilename;
+
+    setWindowTitle("DDO Quest Helper " + VERSION + " - " + filename);
 
     updateRecentFiles();
     updateRecentFileActions();
