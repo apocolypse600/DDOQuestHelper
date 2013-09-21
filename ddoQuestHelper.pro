@@ -23,4 +23,6 @@ FORMS    += mainwindow.ui
 
 OTHER_FILES += \
     ddoQuestDatabase.db \
-    ddoQuestHelper.ini
+    ddoQuestHelper.ini \
+    README.md \
+    COPYING.txt
