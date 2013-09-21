@@ -343,6 +343,11 @@ void MainWindow::open()
 {
     QString readFilename = QFileDialog::getOpenFileName(this,"Open a file");
 
+    if (readFilename == "")
+    {
+        return;
+    }
+
     loadFile(readFilename);
 
     //update the view
