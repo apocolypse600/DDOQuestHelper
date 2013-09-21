@@ -350,9 +350,6 @@ void MainWindow::open()
 
     loadFile(readFilename);
 
-    //update the view
-    tableModel->select();
-
     filename = readFilename;
 
     setWindowTitle("DDO Quest Helper " + VERSION + " - " + filename);
@@ -393,6 +390,9 @@ void MainWindow::loadFile(QString filepath)
             sFile.close();
         }
     }
+
+    //update the tableModel for the new data
+    tableModel->select();
 
 }
 
