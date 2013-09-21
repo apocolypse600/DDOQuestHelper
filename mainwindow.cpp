@@ -4,6 +4,7 @@
 #include <QtCore>
 #include <QtGui>
 #include <QSettings>
+#include <QFileInfo>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -12,9 +13,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     setWindowTitle("DDO Quest Helper " + VERSION);
-
-    createActions();
-    createMenus();
 
     db = QSqlDatabase::addDatabase("QSQLITE");
     db.setHostName("localhost");
@@ -79,6 +77,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->checkBoxHideRaidsFilter, SIGNAL(clicked(bool)),this,SLOT(updateFilters()));
     connect(ui->checkBoxHideExtremeChallengeFilter, SIGNAL(clicked(bool)),this,SLOT(updateFilters()));
     connect(ui->lineEditNameFilter, SIGNAL(textChanged(QString)),this,SLOT(updateFilters()));
+
+    createActions();
+    createMenus();
 
     /*for ( int i = 0; i < tableModel->rowCount(); ++i )
     {
@@ -245,6 +246,45 @@ void MainWindow::on_checkBoxDifficultyCompleted_toggled(bool checked)
     updateColumnVisibility("difficultyCompleted",checked);
 }
 
+void MainWindow::on_checkBoxHideExtremeChallengeFilter_toggled(bool checked)
+{
+    settings->setValue("Misc/hideExtremeChallenge",checked);
+}
+
+void MainWindow::on_checkBoxHideRaidsFilter_toggled(bool checked)
+{
+    settings->setValue("Misc/hideRaids",checked);
+}
+
+void MainWindow::on_checkBoxHideCompletedQuestsFilter_toggled(bool checked)
+{
+    settings->setValue("Misc/hideCompleted",checked);
+}
+
+void MainWindow::updateFilters()
+{
+    QString filter = "Name LIKE '%" + ui->lineEditNameFilter->text() + "%' AND Level<='" + QString::number(ui->spinBoxMaxLevel->value()) + "'" + "AND Level>='" + QString::number(ui->spinBoxMinLevel->value()) + "'";
+
+    if (ui->checkBoxHideCompletedQuestsFilter->isChecked())
+    {
+        filter += " AND DifficultyCompleted<>'Elite' AND DifficultyCompleted<>'Solo'";
+    }
+
+    if ( ui->checkBoxHideExtremeChallengeFilter->isChecked())
+    {
+        filter += " AND ExtremeChallenge<>1";
+    }
+
+    if ( ui->checkBoxHideRaidsFilter->isChecked())
+    {
+        filter += " AND Raid<>1";
+    }
+
+    qDebug() <<"New Filter:" << filter;
+    tableModel->setFilter(filter);
+    //tableModel->select();
+}
+
 void MainWindow::save()
 {
 
@@ -276,8 +316,9 @@ void MainWindow::save()
 
         }
 
-        //TODO write a nice wrapper to save 5 or so previous files
-        settings->setValue("Recent/recentFile1",filename);
+
+        updateRecentFiles();
+        updateRecentFileActions();
 
     }
     else
@@ -302,18 +343,31 @@ void MainWindow::open()
 {
     QString readFilename = QFileDialog::getOpenFileName(this,"Open a file");
 
-    if(!readFilename.isEmpty())
+    loadFile(readFilename);
+
+    //update the view
+    tableModel->select();
+
+    setWindowTitle("DDO Quest Helper " + VERSION + " - " + filename);
+
+    filename = readFilename;
+
+    updateRecentFiles();
+    updateRecentFileActions();
+}
+
+void MainWindow::loadFile(QString filepath)
+{
+
+    if(!filepath.isEmpty())
     {
-        QFile sFile(readFilename);
+        QFile sFile(filepath);
         if(sFile.open(QFile::ReadOnly | QFile::Text))
         {
-            filename = readFilename;
-
             QTextStream in(&sFile);
 
             //Start the transaction with the database. If we do all the edits in one transaction it goes much, much faster
             db.transaction();
-
 
             for ( int i = 0; i < tableModel->rowCount(); ++i )
             {
@@ -331,19 +385,10 @@ void MainWindow::open()
 
             db.commit();
 
-
             sFile.close();
         }
-
     }
 
-    //update the view
-    tableModel->select();
-
-    setWindowTitle("DDO Quest Helper " + VERSION + " - " + filename);
-
-    //TODO write a nice wrapper to save 5 or so previous files
-    settings->setValue("Recent/recentFile1",filename);
 }
 
 void MainWindow::newFile()
@@ -356,87 +401,119 @@ void MainWindow::newFile()
     tableModel->select();
 }
 
-void MainWindow::updateFilters()
-{
-    QString filter = "Name LIKE '%" + ui->lineEditNameFilter->text() + "%' AND Level<='" + QString::number(ui->spinBoxMaxLevel->value()) + "'" + "AND Level>='" + QString::number(ui->spinBoxMinLevel->value()) + "'";
-
-    if (ui->checkBoxHideCompletedQuestsFilter->isChecked())
-    {
-        filter += " AND DifficultyCompleted<>'Elite' AND DifficultyCompleted<>'Solo'";
-    }
-
-    if ( ui->checkBoxHideExtremeChallengeFilter->isChecked())
-    {
-        filter += " AND ExtremeChallenge<>1";
-    }
-
-    if ( ui->checkBoxHideRaidsFilter->isChecked())
-    {
-        filter += " AND Raid<>1";
-    }
-
-    qDebug() <<"New Filter:" << filter;
-    tableModel->setFilter(filter);
-    //tableModel->select();
-}
-
-void MainWindow::on_checkBoxHideExtremeChallengeFilter_toggled(bool checked)
-{
-    settings->setValue("Misc/hideExtremeChallenge",checked);
-}
-
-void MainWindow::on_checkBoxHideRaidsFilter_toggled(bool checked)
-{
-    settings->setValue("Misc/hideRaids",checked);
-}
-
-void MainWindow::on_checkBoxHideCompletedQuestsFilter_toggled(bool checked)
-{
-    settings->setValue("Misc/hideCompleted",checked);
-}
-
 void MainWindow::createActions()
 {
-    newAct = new QAction(tr("&New"), this);
+    newAct = new QAction("&New", this);
     newAct->setShortcuts(QKeySequence::New);
     connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
 
-    openAct = new QAction(tr("&Open..."), this);
+    openAct = new QAction("&Open...", this);
     openAct->setShortcuts(QKeySequence::Open);
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
-    saveAct = new QAction(tr("&Save"), this);
+    saveAct = new QAction("&Save", this);
     saveAct->setShortcuts(QKeySequence::Save);
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
-    saveAsAct = new QAction(tr("Save &As..."), this);
+    saveAsAct = new QAction("Save &As...", this);
     saveAsAct->setShortcuts(QKeySequence::SaveAs);
     connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 
-    /*for (int i = 0; i < MaxRecentFiles; ++i) {
+    for (int i = 0; i < MAX_RECENT_FILES; ++i) {
         recentFileActs[i] = new QAction(this);
         recentFileActs[i]->setVisible(false);
         connect(recentFileActs[i], SIGNAL(triggered()),this, SLOT(openRecentFile()));
-    }*/
+    }
 
-    exitAct = new QAction(tr("E&xit"), this);
+    exitAct = new QAction("E&xit", this);
     exitAct->setShortcuts(QKeySequence::Quit);
     connect(exitAct, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
 }
 
 void MainWindow::createMenus()
 {
-    fileMenu = ui->menuBar->addMenu(tr("&File"));
+    fileMenu = ui->menuBar->addMenu("&File");
     fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
     fileMenu->addAction(saveAct);
     fileMenu->addAction(saveAsAct);
-    //separatorAct = fileMenu->addSeparator();
-    /*for (int i = 0; i < MaxRecentFiles; ++i)
-        fileMenu->addAction(recentFileActs[i]);*/
+    separatorAct = fileMenu->addSeparator();
+    for (int i = 0; i < MAX_RECENT_FILES; ++i)
+    {
+        fileMenu->addAction(recentFileActs[i]);
+    }
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
-    //updateRecentFileActions();
+    updateRecentFileActions();
+}
 
-    //menuBar()->addSeparator();
+void MainWindow::openRecentFile()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    if (action)
+    {
+        filename = action->data().toString();
+        loadFile(filename);
+        setWindowTitle("DDO Quest Helper " + VERSION + " - " + filename);
+    }
+
+    updateRecentFiles();
+    updateRecentFileActions();
+}
+
+//I decided to handle the paths in their own keys incase anyone put strange characters in their paths (eg commas)
+void MainWindow::updateRecentFiles()
+{
+    QStringList files;
+    for (int i = 0 ; i < MAX_RECENT_FILES ; ++i)
+    {
+        //qDebug() << "read in " << settings->value("Recent/recentFile" + QString::number(i + 1)).toString() << "from slot " << "Recent/recentFile" + QString::number(i + 1) <<endl;
+        files.append(settings->value("Recent/recentFile" + QString::number(i + 1)).toString());
+    }
+
+    //qDebug() << files;
+
+    files.removeAll(filename);
+    files.prepend(filename);
+    while (files.size() > MAX_RECENT_FILES)
+        files.removeLast();
+
+    for (int i = 0 ; i < MAX_RECENT_FILES ; ++i)
+    {
+        settings->setValue("Recent/recentFile" + QString::number(i+1), files.at(i));
+    }
+}
+
+void MainWindow::updateRecentFileActions()
+{
+    QStringList files;
+    for (int i = 0 ; i < MAX_RECENT_FILES ; ++i)
+    {
+        files.append(settings->value("Recent/recentFile" + QString::number(i + 1)).toString());
+    }
+
+    //Work out how many actions should actually have content
+    int numRecentFiles = qMin(files.size(), (int)MAX_RECENT_FILES);
+
+    //Make the actions we actually have a path for visible, and give them text
+    for (int i = 0; i < numRecentFiles; ++i) {
+        QString text = tr("&%1 %2").arg(i + 1).arg(stripName(files[i]));
+        recentFileActs[i]->setText(text);
+        recentFileActs[i]->setData(files.at(i));
+        recentFileActs[i]->setVisible(true);
+    }
+
+    //We want the rest of the actions to be invisible
+    for (int i = numRecentFiles; i < MAX_RECENT_FILES; ++i)
+    {
+        recentFileActs[i]->setVisible(false);
+    }
+
+    //Make the extra seperator visible if we have atleast 1 recent file
+    separatorAct->setVisible(numRecentFiles > 0);
+}
+
+QString MainWindow::stripName(const QString fullFilePath)
+{
+    return QFileInfo(fullFilePath).fileName();
 }

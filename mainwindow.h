@@ -37,7 +37,9 @@ private slots:
     void save();
     void saveAs();
     void open();
+    void loadFile(QString filepath);
     void newFile();
+    void openRecentFile();
 
     void updateFilters();
 
@@ -60,6 +62,15 @@ private:
     QAction *saveAct;
     QAction *saveAsAct;
     QAction *exitAct;
+    QAction *separatorAct;
+    void updateRecentFiles();
+    void updateRecentFileActions();
+    QString stripName(const QString fullFilePath);
+
+
+    //const int MAX_RECENT_FILES = 5;
+    enum { MAX_RECENT_FILES = 5 };
+    QAction *recentFileActs[MAX_RECENT_FILES];
 
     QString filename = "";
     const QString VERSION = "0.1.0";
