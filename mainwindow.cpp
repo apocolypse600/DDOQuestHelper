@@ -438,10 +438,12 @@ void MainWindow::createMenus()
     fileMenu->addAction(saveAct);
     fileMenu->addAction(saveAsAct);
     separatorAct = fileMenu->addSeparator();
+
     for (int i = 0; i < MAX_RECENT_FILES; ++i)
     {
         fileMenu->addAction(recentFileActs[i]);
     }
+
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
     updateRecentFileActions();
@@ -489,7 +491,11 @@ void MainWindow::updateRecentFileActions()
     QStringList files;
     for (int i = 0 ; i < MAX_RECENT_FILES ; ++i)
     {
-        files.append(settings->value("Recent/recentFile" + QString::number(i + 1)).toString());
+        QString readString = settings->value("Recent/recentFile" + QString::number(i + 1)).toString();
+        if (readString != "")
+        {
+            files.append(readString);
+        }
     }
 
     //Work out how many actions should actually have content
@@ -513,6 +519,7 @@ void MainWindow::updateRecentFileActions()
     separatorAct->setVisible(numRecentFiles > 0);
 }
 
+//Simple function to take the filename from a full path
 QString MainWindow::stripName(const QString fullFilePath)
 {
     return QFileInfo(fullFilePath).fileName();
